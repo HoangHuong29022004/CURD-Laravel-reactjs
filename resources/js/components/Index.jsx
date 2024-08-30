@@ -36,8 +36,14 @@ function Index() {
     
         fetchItems();
         fetchTrashedItems();
-    }, []); // Empty dependency array ensures this runs once when the component mounts
+    }, []); 
     
+    useEffect(() => {
+        const deletedItems = JSON.parse(localStorage.getItem('deletedItems'));
+        if (deletedItems) {
+            setTrashedItems(deletedItems);
+        }
+    }, []);
 
     const openDeleteConfirmation = (id) => {
         setItemIdToDelete(id);
@@ -54,19 +60,20 @@ function Index() {
                 const uri = `http://localhost:8000/items/${itemIdToDelete}`;
                 await axios.delete(uri);
                 setItems(currentItems => currentItems.filter((item) => item.id !== itemIdToDelete));
-                setTrashedItems([...trashedItems, items.find(item => item.id === itemIdToDelete)]);
+                const deletedItem = items.find(item => item.id === itemIdToDelete);
+                setTrashedItems([...trashedItems, deletedItem]);
                 setSuccessMessage('Đã chuyển mục vào thùng rác!');
                 setTimeout(() => {
                     setSuccessMessage('');
                     navigate('/');
                 }, 1000);
                 closeModal();
+                localStorage.setItem('deletedItems', JSON.stringify([...trashedItems, deletedItem]));
             } catch (error) {
                 console.error('Lỗi khi xóa mục:', error);
             }
         }
     };
-    
 
     const restoreItem = async (id) => {
         try {
@@ -78,6 +85,7 @@ function Index() {
                 setSuccessMessage('');
                 navigate('/'); 
             }, 1000);
+            localStorage.setItem('deletedItems', JSON.stringify(trashedItems.filter((item) => item.id !== id)));
         } catch (error) {
             console.error('Lỗi khi khôi phục mục:', error);
         }
@@ -93,6 +101,7 @@ function Index() {
                 setSuccessMessage('');
                 navigate('/'); 
             }, 1000);
+            localStorage.setItem('deletedItems', JSON.stringify(trashedItems.filter((item) => item.id !== id)));
         } catch (error) {
             console.error('Lỗi khi xóa vĩnh viễn mục:', error);
         }
