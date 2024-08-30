@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from 'axios'; 
+import axios from 'axios';
 
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -16,28 +16,28 @@ function Index() {
     useEffect(() => {
         const fetchItems = async () => {
             try {
-                const uri = 'http://localhost:8000/items'; 
+                const uri = 'http://localhost:8000/items';
                 const response = await axios.get(uri);
                 setItems(response.data);
             } catch (error) {
                 console.error('Error fetching item list:', error);
             }
         };
-    
+
         const fetchTrashedItems = async () => {
             try {
-                const uri = 'http://localhost:8000/items/trashed'; 
+                const uri = 'http://localhost:8000/items/trashed';
                 const response = await axios.get(uri);
                 setTrashedItems(response.data);
             } catch (error) {
                 console.error('Error fetching trashed items list:', error);
             }
         };
-    
+
         fetchItems();
         fetchTrashedItems();
-    }, []); 
-    
+    }, []);
+
     useEffect(() => {
         const deletedItems = JSON.parse(localStorage.getItem('deletedItems'));
         if (deletedItems) {
@@ -83,7 +83,7 @@ function Index() {
             setSuccessMessage('Khôi phục mục thành công!');
             setTimeout(() => {
                 setSuccessMessage('');
-                navigate('/'); 
+                navigate('/');
             }, 1000);
             localStorage.setItem('deletedItems', JSON.stringify(trashedItems.filter((item) => item.id !== id)));
         } catch (error) {
@@ -99,7 +99,7 @@ function Index() {
             setSuccessMessage('Xóa vĩnh viễn mục thành công!');
             setTimeout(() => {
                 setSuccessMessage('');
-                navigate('/'); 
+                navigate('/');
             }, 1000);
             localStorage.setItem('deletedItems', JSON.stringify(trashedItems.filter((item) => item.id !== id)));
         } catch (error) {
