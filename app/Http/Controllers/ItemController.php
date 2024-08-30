@@ -47,4 +47,26 @@ class ItemController extends Controller
 
         return response()->json('Successfully Deleted');
     }
+
+    public function trashed()
+    {
+        $items = Item::onlyTrashed()->get();
+        return response()->json($items);
+    }
+
+    public function restore(string $id)
+    {
+        $item = Item::withTrashed()->find($id);
+        $item->restore();
+
+        return response()->json('Successfully Restored');
+    }
+
+    public function forceDelete(string $id)
+    {
+        $item = Item::withTrashed()->find($id);
+        $item->forceDelete();
+
+        return response()->json('Successfully Permanently Deleted');
+    }
 }
