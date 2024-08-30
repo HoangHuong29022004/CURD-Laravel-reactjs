@@ -43,9 +43,11 @@ class ItemController extends Controller
     public function destroy(string $id)
     {
         $item = Item::find($id);
-        $item->delete();
-
-        return response()->json('Successfully Deleted');
+        if ($item) {
+            $item->delete(); 
+            return response()->json('Successfully moved to trash');
+        }
+        return response()->json('Item not found', 404);
     }
 
     public function trashed()

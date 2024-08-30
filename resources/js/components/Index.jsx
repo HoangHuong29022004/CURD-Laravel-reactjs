@@ -20,23 +20,24 @@ function Index() {
                 const response = await axios.get(uri);
                 setItems(response.data);
             } catch (error) {
-                console.error('Lỗi khi lấy danh sách mục:', error);
+                console.error('Error fetching item list:', error);
             }
         };
-
+    
         const fetchTrashedItems = async () => {
             try {
                 const uri = 'http://localhost:8000/items/trashed'; 
                 const response = await axios.get(uri);
                 setTrashedItems(response.data);
             } catch (error) {
-                console.error('Lỗi khi lấy danh sách mục đã xóa:', error);
+                console.error('Error fetching trashed items list:', error);
             }
         };
-
+    
         fetchItems();
         fetchTrashedItems();
-    }, []);
+    }, []); // Empty dependency array ensures this runs once when the component mounts
+    
 
     const openDeleteConfirmation = (id) => {
         setItemIdToDelete(id);
@@ -53,10 +54,11 @@ function Index() {
                 const uri = `http://localhost:8000/items/${itemIdToDelete}`;
                 await axios.delete(uri);
                 setItems(currentItems => currentItems.filter((item) => item.id !== itemIdToDelete));
-                setSuccessMessage('Xóa mục thành công!');
+                setTrashedItems([...trashedItems, items.find(item => item.id === itemIdToDelete)]);
+                setSuccessMessage('Đã chuyển mục vào thùng rác!');
                 setTimeout(() => {
                     setSuccessMessage('');
-                    navigate('/'); 
+                    navigate('/');
                 }, 1000);
                 closeModal();
             } catch (error) {
@@ -64,6 +66,7 @@ function Index() {
             }
         }
     };
+    
 
     const restoreItem = async (id) => {
         try {
@@ -159,7 +162,7 @@ function Index() {
                                         <i className="bi bi-arrow-clockwise me-1"></i> Khôi phục
                                     </Button>
                                     <Button variant="outline-danger" size="sm" onClick={() => forceDeleteItem(item.id)}>
-                                        <i className="bi bi-trash me-1"></i> Xóa vĩnh viễn
+                                        <i className="bi bi-trash me-1"></i> Xóa luôn
                                     </Button>
                                 </td>
                             </tr>
