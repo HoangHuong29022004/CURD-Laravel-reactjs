@@ -139,7 +139,7 @@ function Index() {
                                     <Link to={`/edit/${item.id}`} className="btn btn-sm btn-outline-primary me-2">
                                         <i className="bi bi-pencil-square me-1"></i> Sửa
                                     </Link>
-                                    <Button variant="outline-danger" size="sm" className="me-2">
+                                    <Button variant="outline-danger" size="sm" onClick={() => openDeleteConfirmation(item.id)}>
                                         <i className="bi bi-trash me-1"></i> Xóa
                                     </Button>
                                 </td>
@@ -167,10 +167,10 @@ function Index() {
                                 <td>{item.name}</td>
                                 <td>{item.price} VNĐ</td>
                                 <td>
-                                    <Button variant="outline-success" size="sm" onClick={() => restoreItem(item.id)}>
+                                    <Button className="ms-2" variant="outline-success" size="sm" onClick={() => restoreItem(item.id)}>
                                         <i className="bi bi-arrow-clockwise me-1"></i> Khôi phục
                                     </Button>
-                                    <Button variant="outline-danger" size="sm" onClick={() => forceDeleteItem(item.id)} className="ms-2">
+                                    <Button className="ms-2" variant="outline-danger" size="sm" onClick={() => forceDeleteItem(item.id)}>
                                         <i className="bi bi-trash me-1"></i> Xóa luôn
                                     </Button>
                                 </td>
