@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from 'axios'; 
+import axios from 'axios';
 
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
 function Index() {
     const [items, setItems] = useState([]);
+    const [trashedItems, setTrashedItems] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemIdToDelete, setItemIdToDelete] = useState(null);
@@ -15,15 +16,33 @@ function Index() {
     useEffect(() => {
         const fetchItems = async () => {
             try {
-                const uri = 'http://localhost:8000/items'; 
+                const uri = 'http://localhost:8000/items';
                 const response = await axios.get(uri);
                 setItems(response.data);
             } catch (error) {
-                console.error('Lỗi khi lấy danh sách mục:', error);
+                console.error('Error fetching item list:', error);
+            }
+        };
+
+        const fetchTrashedItems = async () => {
+            try {
+                const uri = 'http://localhost:8000/items/trashed';
+                const response = await axios.get(uri);
+                setTrashedItems(response.data);
+            } catch (error) {
+                console.error('Error fetching trashed items list:', error);
             }
         };
 
         fetchItems();
+        fetchTrashedItems();
+    }, []);
+
+    useEffect(() => {
+        const deletedItems = JSON.parse(localStorage.getItem('deletedItems'));
+        if (deletedItems) {
+            setTrashedItems(deletedItems);
+        }
     }, []);
 
     const openDeleteConfirmation = (id) => {
@@ -41,15 +60,50 @@ function Index() {
                 const uri = `http://localhost:8000/items/${itemIdToDelete}`;
                 await axios.delete(uri);
                 setItems(currentItems => currentItems.filter((item) => item.id !== itemIdToDelete));
-                setSuccessMessage('Xóa mục thành công!');
+                const deletedItem = items.find(item => item.id === itemIdToDelete);
+                setTrashedItems([...trashedItems, deletedItem]);
+                setSuccessMessage('Đã chuyển mục vào thùng rác!');
                 setTimeout(() => {
                     setSuccessMessage('');
-                    navigate('/'); 
+                    navigate('/');
                 }, 1000);
                 closeModal();
+                localStorage.setItem('deletedItems', JSON.stringify([...trashedItems, deletedItem]));
             } catch (error) {
                 console.error('Lỗi khi xóa mục:', error);
             }
+        }
+    };
+
+    const restoreItem = async (id) => {
+        try {
+            const uri = `http://localhost:8000/items/restore/${id}`;
+            await axios.put(uri);
+            setTrashedItems(currentItems => currentItems.filter((item) => item.id !== id));
+            setSuccessMessage('Khôi phục mục thành công!');
+            setTimeout(() => {
+                setSuccessMessage('');
+                navigate('/');
+            }, 1000);
+            localStorage.setItem('deletedItems', JSON.stringify(trashedItems.filter((item) => item.id !== id)));
+        } catch (error) {
+            console.error('Lỗi khi khôi phục mục:', error);
+        }
+    };
+
+    const forceDeleteItem = async (id) => {
+        try {
+            const uri = `http://localhost:8000/items/force-delete/${id}`;
+            await axios.delete(uri);
+            setTrashedItems(currentItems => currentItems.filter((item) => item.id !== id));
+            setSuccessMessage('Xóa vĩnh viễn mục thành công!');
+            setTimeout(() => {
+                setSuccessMessage('');
+                navigate('/');
+            }, 1000);
+            localStorage.setItem('deletedItems', JSON.stringify(trashedItems.filter((item) => item.id !== id)));
+        } catch (error) {
+            console.error('Lỗi khi xóa vĩnh viễn mục:', error);
         }
     };
 
@@ -80,13 +134,44 @@ function Index() {
                             <tr key={item.id}>
                                 <td>{item.id}</td>
                                 <td>{item.name}</td>
-                                <td>{item.price}</td>
+                                <td>{item.price} VNĐ</td>
                                 <td>
                                     <Link to={`/edit/${item.id}`} className="btn btn-sm btn-outline-primary me-2">
                                         <i className="bi bi-pencil-square me-1"></i> Sửa
                                     </Link>
                                     <Button variant="outline-danger" size="sm" onClick={() => openDeleteConfirmation(item.id)}>
                                         <i className="bi bi-trash me-1"></i> Xóa
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 className="mt-5">Thùng rác</h2>
+            <div className="table-responsive">
+                <table className="table table-hover table-bordered">
+                    <thead className="table-dark">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Tên mục</th>
+                            <th scope="col">Giá mục</th>
+                            <th scope="col" style={{ width: "20%" }}>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {trashedItems.map((item) => (
+                            <tr key={item.id}>
+                                <td>{item.id}</td>
+                                <td>{item.name}</td>
+                                <td>{item.price} VNĐ</td>
+                                <td>
+                                    <Button className="ms-2" variant="outline-success" size="sm" onClick={() => restoreItem(item.id)}>
+                                        <i className="bi bi-arrow-clockwise me-1"></i> Khôi phục
+                                    </Button>
+                                    <Button className="ms-2" variant="outline-danger" size="sm" onClick={() => forceDeleteItem(item.id)}>
+                                        <i className="bi bi-trash me-1"></i> Xóa luôn
                                     </Button>
                                 </td>
                             </tr>

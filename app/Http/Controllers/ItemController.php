@@ -21,7 +21,7 @@ class ItemController extends Controller
         ]);
 
         $item->save();
-        return response()->json('Successfully added');
+        return response()->json('Thêm thành công');
     }
 
     public function edit(string $id)
@@ -37,14 +37,38 @@ class ItemController extends Controller
         $item->price = $request->get('price');
         $item->save();
 
-        return response()->json('Successfully Updated');
+        return response()->json('Cập nhật thành công');
     }
 
     public function destroy(string $id)
     {
         $item = Item::find($id);
-        $item->delete();
+        if ($item) {
+            $item->delete();
+            return response()->json('Đã di chuyển vào thùng rác thành công');
+        }
+        return response()->json('Không tìm thấy mục', 404);
+    }
 
-        return response()->json('Successfully Deleted');
+    public function trashed()
+    {
+        $items = Item::onlyTrashed()->get();
+        return response()->json($items);
+    }
+
+    public function restore(string $id)
+    {
+        $item = Item::withTrashed()->find($id);
+        $item->restore();
+
+        return response()->json('Khôi phục thành công');
+    }
+
+    public function forceDelete(string $id)
+    {
+        $item = Item::withTrashed()->find($id);
+        $item->forceDelete();
+
+        return response()->json('Xóa vĩnh viễn thành công');
     }
 }
